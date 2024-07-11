@@ -179,6 +179,15 @@ int parse(char buffer[],        /* バッファ */
         }
 
         /*
+         *  引数の先頭が " で始まっている場合
+         *  " が終わるまでの間は空白類を無視する
+         */
+        if (*buffer == '\"') {
+            in_quotes = !in_quotes;
+            buffer++;
+        }
+
+        /*
          *  空白部分は読み飛ばされたはず
          *  buffer は現在は arg_index + 1 個めの引数の先頭を指している
          *
@@ -193,7 +202,12 @@ int parse(char buffer[],        /* バッファ */
          *  （ヌル文字でも空白類でもない場合に読み進める）
          */
 
-        while((*buffer != '\0') && (*buffer != ' ') && (*buffer != '\t')) {
+        while((*buffer != '\0') && (in_quotes || (*buffer != ' ' && *buffer != '\t'))) {
+            if (*buffer == '\"') {
+                in_quotes = !in_quotes;
+                *(buffer++) = '\0';
+                break;
+            }
             ++buffer;
         }
     }
