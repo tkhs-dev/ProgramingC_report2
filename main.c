@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <stdbool.h>
+#include "commands.h"
 
 /*
  *  定数の定義
@@ -26,6 +28,7 @@
 
 int parse(char [], char *[]);
 void execute_command(char *[], int);
+
 
 /*----------------------------------------------------------------------------
  *
@@ -88,8 +91,6 @@ int main(int argc, char *argv[])
 
         if(command_status == 2) {
             printf("done.\n");
-            printf("press any key to exit.\n");
-            getchar();
             exit(EXIT_SUCCESS);
         } else if(command_status == 3) {
             continue;
@@ -260,55 +261,58 @@ int parse(char buffer[],        /* バッファ */
 void execute_command(char *args[],    /* 引数の配列 */
                      int command_status)     /* コマンドの状態 */
 {
-    int pid;      /* プロセスＩＤ */
-    int status;   /* 子プロセスの終了ステータス */
+    command *command = select_command(args[0]);
+    if (command != NULL) {
+        command->executor_function(args);
+        return;
+    }else{
+        int pid;      /* プロセスＩＤ */
+        int status;   /* 子プロセスの終了ステータス */
 
-    /*
-     *  子プロセスを生成する
-     *
-     *  生成できたかを確認し、失敗ならばプログラムを終了する
-     */
-    pid = fork();
-    if(pid < 0) {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
-
-    /*
-     *  子プロセスの場合には引数として与えられたものを実行する
-     *
-     *  引数の配列は以下を仮定している
-     *  ・第１引数には実行されるプログラムを示す文字列が格納されている
-     *  ・引数の配列はヌルポインタで終了している
-     */
-    if(pid == 0) {
-        status = execvp(args[0], args);
-        if(status < 0) {
-            perror("execvp");
+        /*
+         *  子プロセスを生成する
+         *
+         *  生成できたかを確認し、失敗ならばプログラムを終了する
+         */
+        pid = fork();
+        if(pid < 0) {
+            perror("fork");
             exit(EXIT_FAILURE);
         }
-    }
+
+        /*
+         *  子プロセスの場合には引数として与えられたものを実行する
+         *
+         *  引数の配列は以下を仮定している
+         *  ・第１引数には実行されるプログラムを示す文字列が格納されている
+         *  ・引数の配列はヌルポインタで終了している
+         */
+        if(pid == 0) {
+            status = execvp(args[0], args);
+            if(status < 0) {
+                perror("execvp");
+                exit(EXIT_FAILURE);
+            }
+        }else{
+            /*
+            *  コマンドの状態がバックグラウンドなら関数を抜ける
+            */
+
+            if(command_status == 1) {
+                return;
+            }
+
+            /*
+             *  ここにくるのはコマンドの状態がフォアグラウンドの場合
+             *
+             *  親プロセスの場合に子プロセスの終了を待つ
+             */
+            wait(&status);
+        }
 
 
-    /*
-     *  コマンドの状態がバックグラウンドなら関数を抜ける
-     */
-
-    if(command_status == 1) {
         return;
     }
-
-    /*
-     *  ここにくるのはコマンドの状態がフォアグラウンドの場合
-     *
-     *  親プロセスの場合に子プロセスの終了を待つ
-     */
-    if(pid > 0) {
-        wait(&status);
-    }
-
-
-    return;
 }
 
 /*-- END OF FILE -----------------------------------------------------------*/
