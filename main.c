@@ -63,8 +63,11 @@ int main(int argc, char *argv[])
         /*
          *  プロンプトを表示する
          */
-
-        printf("Command : ");
+        char* prompt = getenv("PSC1");
+        if (prompt == NULL) {
+            prompt = "Command : ";
+        }
+        printf("%s",prompt);
 
         /*
          *  標準入力から１行を command_buffer へ読み込む
@@ -129,7 +132,7 @@ int parse(char buffer[],        /* バッファ */
 {
     int arg_index;   /* 引数用のインデックス */
     int status;   /* コマンドの状態を表す */
-
+    bool in_quotes = false;
     /*
      *  変数の初期化
      */

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <regex.h>
+#include <stdlib.h>
 #include "commands.h"
 
 /*
@@ -42,7 +43,7 @@ bool redo_resolver(char *command) {
 }
 
 int prompt_executor(char *args[]) {
-    printf("prompt called!!\n");
+    setenv("PSC1", args[1], 1);
     return 0;
 }
 
