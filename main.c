@@ -430,7 +430,7 @@ int redo_executor(char *args[]) {
     return 0;
 }
 
-bool redo_resolver(char *command) {
+bool redo_match(char *command) {
     return command[0] == '!';
 }
 
@@ -455,15 +455,15 @@ int unalias_executor(char *args[]) {
  */
 
 command commands[] = {
-        {"cd",NULL, cd_executor},
-        {"pushd",NULL, pushd_executor},
-        {"dirs",NULL, dirs_executor},
-        {"popd",NULL, popd_executor},
-        {"history",NULL, history_executor},
-        {"!!",redo_resolver, redo_executor},
-        {"prompt",NULL, prompt_executor},
-        {"alias",NULL, alias_executor},
-        {"unalias",NULL, unalias_executor},
+        {"cd",NULL,        cd_executor},
+        {"pushd",NULL,     pushd_executor},
+        {"dirs",NULL,      dirs_executor},
+        {"popd",NULL,      popd_executor},
+        {"history",NULL,   history_executor},
+        {"!!", redo_match, redo_executor},
+        {"prompt",NULL,    prompt_executor},
+        {"alias",NULL,     alias_executor},
+        {"unalias",NULL,   unalias_executor},
 };
 
 command* select_command(char *command) {
