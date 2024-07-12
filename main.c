@@ -416,7 +416,7 @@ int history_executor(char *args[]) {
     history_list current = history;
     history_list head = current;
     while(1) {
-        if(current->content != NULL) printf("%s\n", current->content);
+        if(current->content != NULL) printf("%s", current->content);
         current = current->next;
         if(current == head) {
             break;
