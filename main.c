@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
          */
 
         execute_command(args, command_status);
+        printf("\n");
 
         /*
         *  ヒストリーに追加
