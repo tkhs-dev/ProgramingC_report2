@@ -105,8 +105,8 @@ int main(int argc, char *argv[])
          *
          *  返り値はコマンドの状態
          */
-
-        command_status = parse(command_buffer, args);
+        char *command = strdup(command_buffer);
+        command_status = parse(command, args);
 
         /*
          *  終了コマンドならばプログラムを終了
