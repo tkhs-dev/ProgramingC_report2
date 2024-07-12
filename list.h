@@ -1,15 +1,10 @@
-#ifndef PROGRAMINGC_REPORT2_LIST_H
-#define PROGRAMINGC_REPORT2_LIST_H
+typedef struct list{
+    void*  content;
+    struct list *prev;
+    struct list *next;
+} LIST;
 
-#endif //PROGRAMINGC_REPORT2_LIST_H
-
-typedef struct str_list{
-    char            *content;
-    struct str_list *prev;
-    struct str_list *next;
-} STR_LIST;
-
-STR_LIST *new_item(char *content, STR_LIST *post_item, STR_LIST *pre_item);
-STR_LIST *insert(STR_LIST *root, char *content);
-STR_LIST *delete(STR_LIST *item);
-void clear_list(STR_LIST *item);
+LIST *new_item(void* content, LIST *post_item, LIST *pre_item);
+LIST *insert(LIST *root, void* content);
+LIST *delete(LIST *item);
+void clear_list(LIST *item);

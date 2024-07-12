@@ -3,11 +3,11 @@
 #include <string.h>
 #include "list.h"
 
-STR_LIST *new_item(char *content, STR_LIST *post_item, STR_LIST *pre_item)
+LIST *new_item(void* content, LIST *post_item, LIST *pre_item)
 {
-    STR_LIST *new;
+    LIST *new;
 
-    new = (STR_LIST *)malloc(sizeof(STR_LIST));
+    new = (LIST *)malloc(sizeof(LIST));
 
     if (!new) {
         perror("new_item");
@@ -33,9 +33,9 @@ STR_LIST *new_item(char *content, STR_LIST *post_item, STR_LIST *pre_item)
     return new;
 }
 
-STR_LIST *insert(STR_LIST *root, char *content){
+LIST *insert(LIST *root, void* content){
 
-    STR_LIST *p;
+    LIST *p;
 
     /* root が NULL の場合の新規リスト要素の挿入処理 */
     if(root == NULL)
@@ -44,9 +44,9 @@ STR_LIST *insert(STR_LIST *root, char *content){
     return(new_item(content, root, NULL));
 }
 
-STR_LIST *delete(STR_LIST *item){
-    STR_LIST *next_item = item->next;
-    STR_LIST *prev_item = item->prev;
+LIST *delete(LIST *item){
+    LIST *next_item = item->next;
+    LIST *prev_item = item->prev;
 
     if(prev_item)
         prev_item->next = next_item;
@@ -59,7 +59,7 @@ STR_LIST *delete(STR_LIST *item){
     return next_item;
 }
 
-void clear_list(STR_LIST *item){
+void clear_list(LIST *item){
     if(item == NULL)
         return;
     clear_list(item->next);

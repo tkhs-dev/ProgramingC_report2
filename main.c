@@ -32,7 +32,7 @@ typedef struct {
     int (*executor)(char *[]);
 } command;
 
-typedef STR_LIST* history_list;
+typedef LIST* history_list;
 
 /*
  *  ローカルプロトタイプ宣言
@@ -152,9 +152,9 @@ void add_history(char *command) {
 }
 
 char* get_history(int index) {
-    STR_LIST* current = history;
-    for(int i = 0; i < index; i++) {
-        current = current->next;
+    LIST* current = history;
+    for(int i = 0; i < index % HISTORY_SIZE; i++) {
+        current = current->prev;
     }
     return current->content;
 }
