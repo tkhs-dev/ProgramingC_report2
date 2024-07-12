@@ -388,6 +388,11 @@ int alias_executor(char *args[]) {
     return 0;
 }
 
+int unalias_executor(char *args[]) {
+    printf("unalias called!!\n");
+    return 0;
+}
+
 
 /*
  * コマンドの選択
@@ -402,6 +407,7 @@ command commands[] = {
         {"!!",redo_resolver, redo_executor},
         {"prompt",NULL, prompt_executor},
         {"alias",NULL, alias_executor},
+        {"unalias",NULL, unalias_executor},
 };
 
 command* select_command(char *command) {
