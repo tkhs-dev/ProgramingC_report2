@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <stdbool.h>
+#include "list.h"
 
 /*
  *  定数の定義
@@ -31,13 +32,22 @@ typedef struct {
     int (*executor_function)(char *[]);
 } command;
 
+typedef STR_LIST* history_list;
+
 /*
  *  ローカルプロトタイプ宣言
  */
 
+void initialize_history(int);
+void add_history(char *);
 int parse(char [], char *[]);
 void execute_command(char *[], int);
 command *select_command(char *command);
+
+/*
+ * ヒストリー系の変数
+ */
+history_list history;
 
 /*----------------------------------------------------------------------------
  *
@@ -62,6 +72,8 @@ int main(int argc, char *argv[])
                                     command_status = 1 : バックグラウンドで実行
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
+
+    initialize_history(32);
 
     /*
      *  無限にループする
@@ -113,9 +125,37 @@ int main(int argc, char *argv[])
          */
 
         execute_command(args, command_status);
+
+        /*
+        *  ヒストリーに追加
+        */
+        add_history(command_buffer);
     }
 
     return 0;
+}
+
+void initialize_history(int history_size) {
+    history = NULL;
+    history = insert(history, NULL);
+    history_list tail = history;
+    for(int i = 0; i < history_size-2; i++) {
+        history = insert(history, NULL);
+    }
+    history = new_item(NULL, history, tail);
+}
+
+void add_history(char *command) {
+    history->content = strdup(command);
+    history = history->next;
+}
+
+char* get_history(int index) {
+    STR_LIST* current = history;
+    for(int i = 0; i < index; i++) {
+        current = current->next;
+    }
+    return current->content;
 }
 
 /*----------------------------------------------------------------------------
@@ -373,7 +413,15 @@ int popd_executor(char *args[]) {
 }
 
 int history_executor(char *args[]) {
-    printf("history called!!\n");
+    history_list current = history;
+    history_list head = current;
+    while(1) {
+        if(current->content != NULL) printf("%s\n", current->content);
+        current = current->next;
+        if(current == head) {
+            break;
+        }
+    }
     return 0;
 }
 
