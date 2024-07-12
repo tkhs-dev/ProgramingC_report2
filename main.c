@@ -13,7 +13,6 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <stdbool.h>
-#include "commands.h"
 
 /*
  *  定数の定義
@@ -23,12 +22,22 @@
 #define MAXARGNUM  256     /* 最大の引数の数 */
 
 /*
+ * 構造体の定義
+ */
+
+typedef struct {
+    char *name;
+    bool (*resolver_function)(char *);
+    int (*executor_function)(char *[]);
+} command;
+
+/*
  *  ローカルプロトタイプ宣言
  */
 
 int parse(char [], char *[]);
 void execute_command(char *[], int);
-
+command *select_command(char *command);
 
 /*----------------------------------------------------------------------------
  *
@@ -330,6 +339,84 @@ void execute_command(char *args[],    /* 引数の配列 */
 
         return;
     }
+}
+
+/*
+ * コマンドの実装
+ */
+int cd_executor(char *args[]) {
+    printf("cd called!!\n");
+    return 0;
+}
+
+int pushd_executor(char *args[]) {
+    printf("pushd called!!\n");
+    return 0;
+}
+
+int dirs_executor(char *args[]) {
+    printf("dirs called!!\n");
+    return 0;
+}
+
+int popd_executor(char *args[]) {
+    printf("popd called!!\n");
+    return 0;
+}
+
+int history_executor(char *args[]) {
+    printf("history called!!\n");
+    return 0;
+}
+
+int redo_executor(char *args[]) {
+    printf("redo called!!\n");
+    return 0;
+}
+
+bool redo_resolver(char *command) {
+    return strcmp(command, "!!") == 0;
+}
+
+int prompt_executor(char *args[]) {
+    setenv("PSC1", args[1], 1);
+    return 0;
+}
+
+int alias_executor(char *args[]) {
+    printf("alias called!!\n");
+    return 0;
+}
+
+
+/*
+ * コマンドの選択
+ */
+
+command commands[] = {
+        {"cd",NULL, cd_executor},
+        {"pushd",NULL, pushd_executor},
+        {"dirs",NULL, dirs_executor},
+        {"popd",NULL, popd_executor},
+        {"history",NULL, history_executor},
+        {"!!",redo_resolver, redo_executor},
+        {"prompt",NULL, prompt_executor},
+        {"alias",NULL, alias_executor},
+};
+
+command* select_command(char *command) {
+    for (int i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
+        if(commands[i].resolver_function == NULL){
+            if (strcmp(commands[i].name, command) == 0) {
+                return &commands[i];
+            }else{
+                continue;
+            }
+        }else if (commands[i].resolver_function(command)) {
+            return &commands[i];
+        }
+    }
+    return NULL;
 }
 
 /*-- END OF FILE -----------------------------------------------------------*/
