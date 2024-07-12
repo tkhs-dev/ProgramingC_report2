@@ -345,8 +345,16 @@ void execute_command(char *args[],    /* 引数の配列 */
  * コマンドの実装
  */
 int cd_executor(char *args[]) {
-    printf("cd called!!\n");
-    return 0;
+    if(args[1] == NULL){
+        chdir(getenv("HOME"));
+        return 0;
+    }else{
+        if(chdir(args[1]) < 0){
+            perror("cd");
+            return 1;
+        }
+        return 0;
+    }
 }
 
 int pushd_executor(char *args[]) {
@@ -395,7 +403,7 @@ int unalias_executor(char *args[]) {
 
 
 /*
- * コマンドの選択
+ * コマンドの設定
  */
 
 command commands[] = {
