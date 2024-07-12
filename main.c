@@ -28,8 +28,8 @@
 
 typedef struct {
     char *name;
-    bool (*resolver_function)(char *);
-    int (*executor_function)(char *[]);
+    bool (*is_match_func)(char *);
+    int (*executor)(char *[]);
 } command;
 
 typedef STR_LIST* history_list;
@@ -329,7 +329,7 @@ void execute_command(char *args[],    /* 引数の配列 */
 {
     command *command = select_command(args[0]);
     if (command != NULL) {
-        command->executor_function(args);
+        command->executor(args);
         return;
     }else{
         int pid;      /* プロセスＩＤ */
@@ -431,7 +431,7 @@ int redo_executor(char *args[]) {
 }
 
 bool redo_resolver(char *command) {
-    return strcmp(command, "!!") == 0;
+    return command[0] == '!';
 }
 
 int prompt_executor(char *args[]) {
@@ -468,13 +468,13 @@ command commands[] = {
 
 command* select_command(char *command) {
     for (int i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
-        if(commands[i].resolver_function == NULL){
+        if(commands[i].is_match_func == NULL){
             if (strcmp(commands[i].name, command) == 0) {
                 return &commands[i];
             }else{
                 continue;
             }
-        }else if (commands[i].resolver_function(command)) {
+        }else if (commands[i].is_match_func(command)) {
             return &commands[i];
         }
     }
