@@ -21,6 +21,7 @@
 
 #define BUFLEN    1024     /* コマンド用のバッファの大きさ */
 #define MAXARGNUM  256     /* 最大の引数の数 */
+#define HISTORY_SIZE 32
 
 /*
  * 構造体の定義
@@ -32,7 +33,11 @@ typedef struct {
     int (*executor)(char *[]);
 } command;
 
-typedef LIST* history_list;
+typedef struct {
+    int index;
+    char *command;
+} history;
+
 
 /*
  *  ローカルプロトタイプ宣言
@@ -47,7 +52,7 @@ command *select_command(char *command);
 /*
  * ヒストリー系の変数
  */
-history_list history;
+struct list *history_list;
 
 /*----------------------------------------------------------------------------
  *
@@ -73,7 +78,7 @@ int main(int argc, char *argv[])
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
 
-    initialize_history(32);
+    initialize_history(HISTORY_SIZE);
 
     /*
      *  無限にループする
@@ -137,22 +142,32 @@ int main(int argc, char *argv[])
 }
 
 void initialize_history(int history_size) {
-    history = NULL;
-    history = insert(history, NULL);
-    history_list tail = history;
+    history_list = NULL;
+    history_list = insert(history_list, NULL);
+    struct list *tail = history_list;
     for(int i = 0; i < history_size-2; i++) {
-        history = insert(history, NULL);
+        history_list = insert(history_list, NULL);
     }
-    history = new_item(NULL, history, tail);
+    history_list = new_item(NULL, history_list, tail);
 }
 
 void add_history(char *command) {
-    history->content = strdup(command);
-    history = history->next;
+    history *new_history = (history *)malloc(sizeof(history));
+    new_history->command = strdup(command);
+    if(history_list->content != NULL) {
+        free(history_list->content);
+    }
+    if(history_list->prev->content != NULL) {
+        new_history->index = ((history *)history_list->prev->content)->index + 1;
+    }else{
+        new_history->index = 0;
+    }
+    history_list->content = new_history;
+    history_list = history_list->next;
 }
 
-char* get_history(int index) {
-    LIST* current = history;
+history* get_history(int index) {
+    LIST* current = history_list;
     for(int i = 0; i < index % HISTORY_SIZE; i++) {
         current = current->prev;
     }
@@ -414,10 +429,12 @@ int popd_executor(char *args[]) {
 }
 
 int history_executor(char *args[]) {
-    history_list current = history;
-    history_list head = current;
+    struct list *current = history_list;
+    struct list *head = current;
     while(1) {
-        if(current->content != NULL) printf("%s", current->content);
+        if(current->content != NULL){
+            printf("[%d] %s", ((history *)current->content)->index, ((history *)current->content)->command);
+        }
         current = current->next;
         if(current == head) {
             break;
