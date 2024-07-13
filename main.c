@@ -38,6 +38,11 @@ typedef struct {
     char *command;
 } history;
 
+typedef struct {
+    char *name;
+    char *value;
+} alias;
+
 
 /*
  *  ローカルプロトタイプ宣言
@@ -45,6 +50,7 @@ typedef struct {
 
 void initialize_history(int);
 void add_history(char *);
+void dispose_alias();
 int parse(char [], char *[]);
 void execute_command(char *[], int);
 command *select_command(char *command);
@@ -59,6 +65,11 @@ struct list *history_list;
  * ディレクトリスタック系の変数
  */
 struct list *dir_stack;
+
+/*
+ * エイリアス系の変数
+ */
+struct list *alias_list;
 
 /*----------------------------------------------------------------------------
  *
@@ -147,6 +158,7 @@ int main(int argc, char *argv[])
     }
     clear_list(history_list);
     clear_list(dir_stack);
+    dispose_alias(alias_list);
     exit(EXIT_SUCCESS);
 }
 
@@ -197,6 +209,43 @@ history* get_history_relatively(int n){
     }
     return current->content;
 }
+
+char* get_alias(char *name) {
+    struct list *current = alias_list;
+    while(1) {
+        if(current == NULL){
+            break;
+        }
+        current = current->next;
+    }
+    current = alias_list;
+    while(1) {
+        if(current == NULL){
+            break;
+        }
+        if(current->content != NULL && ((alias *)current->content)->name != NULL && strcmp(((alias *)current->content)->name, name) == 0){
+            return ((alias *)current->content)->value;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+void dispose_alias() {
+    struct list *current = alias_list;
+    while(1) {
+        if(current == NULL){
+            break;
+        }
+        if(current->content != NULL){
+            free(((alias *)current->content)->name);
+            free(((alias *)current->content)->value);
+        }
+        current = current->next;
+    }
+    clear_list(alias_list);
+}
+
 
 /*----------------------------------------------------------------------------
  *
@@ -532,12 +581,31 @@ int prompt_executor(char *args[]) {
 }
 
 int alias_executor(char *args[]) {
-    printf("alias called!!\n");
+    if(args[1] == NULL || args[2] == NULL){
+        printf("alias: Too few arguments\n");
+        return 1;
+    }
+    alias* new_alias = (alias *)malloc(sizeof(alias));
+    new_alias->name = strdup(args[1]);
+    new_alias->value = strdup(args[2]);
+    alias_list = insert(alias_list, new_alias);
     return 0;
 }
 
 int unalias_executor(char *args[]) {
-    printf("unalias called!!\n");
+    struct list *current = alias_list;
+    while(1) {
+        if(current == NULL){
+            break;
+        }
+        if(current->content != NULL && strcmp(((alias *)current->content)->name, args[1]) == 0){
+            free(((alias *)current->content)->name);
+            free(((alias *)current->content)->value);
+            alias_list = delete(current);
+            break;
+        }
+        current = current->next;
+    }
     return 0;
 }
 
@@ -559,6 +627,10 @@ command commands[] = {
 };
 
 command* select_command(char *command) {
+    char *alias_command = get_alias(command);
+    if(alias_command != NULL){
+        strcpy(command, alias_command);
+    }
     for (int i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
         if(commands[i].is_match_func == NULL){
             if (strcmp(commands[i].name, command) == 0) {
