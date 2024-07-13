@@ -50,6 +50,7 @@ typedef struct {
 
 void initialize_history(int);
 void add_history(char *);
+void dispose_history();
 void dispose_alias();
 int parse(char [], char *[]);
 void execute_command(char *[], int);
@@ -156,7 +157,7 @@ int main(int argc, char *argv[])
             add_history(command_buffer);
         }
     }
-    clear_list(history_list);
+    dispose_history();
     clear_list(dir_stack);
     dispose_alias(alias_list);
     exit(EXIT_SUCCESS);
@@ -200,6 +201,21 @@ history* get_history_absolutely(int index){
         }
     }
     return NULL;
+}
+
+void dispose_history() {
+    struct list *current = history_list;
+    while(1) {
+        if(current == history_list){
+            break;
+        }
+        if(current->content != NULL){
+            free(((history *)current->content)->command);
+        }
+        current = current->next;
+    }
+    history_list->prev->next = NULL;
+    clear_list(history_list);
 }
 
 history* get_history_relatively(int n){
@@ -532,7 +548,7 @@ int history_executor(char *args[]) {
 int redo_executor(char *args[]) {
     history* his = NULL;
     if(args[0][1] == '!'){
-        his = get_previous_relatively(1);
+        his = get_history_relatively(1);
     }else{
         char *e;
         int index = strtol(args[0]+1, &e, 10);
@@ -541,7 +557,7 @@ int redo_executor(char *args[]) {
                 printf("Invalid history index\n");
                 return 1;
             }
-            his = index >= 0 ? get_history_absolutely(index) : get_previous_relatively(-index);
+            his = index >= 0 ? get_history_absolutely(index) : get_history_relatively(-index);
         }else{
             struct list *current = history_list;
             while(1) {
