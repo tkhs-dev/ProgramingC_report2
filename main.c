@@ -461,33 +461,44 @@ int history_executor(char *args[]) {
 }
 
 int redo_executor(char *args[]) {
-    char *e;
-    int index = strtol(args[0]+1, &e, 10);
-    if(*e == '\0'){
-        if(index < -HISTORY_SIZE || index >= HISTORY_SIZE){
-            printf("Invalid history index\n");
-            return 1;
-        }
-
-        history* his;
-        if(index >= 0){
-            his = get_history_absolutely(index);
+    history* his = NULL;
+    if(args[0][1] == '!'){
+        his = get_previous_relatively(1);
+    }else{
+        char *e;
+        int index = strtol(args[0]+1, &e, 10);
+        if(*e == '\0'){
+            if(index < -HISTORY_SIZE || index >= HISTORY_SIZE){
+                printf("Invalid history index\n");
+                return 1;
+            }
+            his = index >= 0 ? get_history_absolutely(index) : get_previous_relatively(-index);
         }else{
-            his = get_previous_relatively(-index);
+            struct list *current = history_list;
+            while(1) {
+                if (current->content != NULL &&
+                    strncmp(((history *) current->content)->command, args[0] + 1, strlen(args[0] + 1)) == 0) {
+                    his = current->content;
+                    break;
+                }
+                current = current->next;
+                if (current == history_list) {
+                    break;
+                }
+            }
         }
-
-        if(his == NULL){
-            printf("No such history index\n");
-            return 1;
-        }
-        char* command = strdup(his->command);
-
-        char *redo_args[MAXARGNUM];
-        int status = parse(command, redo_args);
-        printf("redo : %s\n", command);
-        execute_command(redo_args, status);
-        free(command);
     }
+
+    if(his == NULL){
+        printf("No such history\n");
+        return 1;
+    }
+    char* command = strdup(his->command);
+
+    char *redo_args[MAXARGNUM];
+    int status = parse(command, redo_args);
+    execute_command(redo_args, status);
+    free(command);
     return 0;
 }
 
