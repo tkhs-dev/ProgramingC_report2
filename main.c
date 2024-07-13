@@ -190,7 +190,7 @@ history* get_history_absolutely(int index){
     return NULL;
 }
 
-history* get_previous_relatively(int n){
+history* get_history_relatively(int n){
     struct list *current = history_list;
     for(int i = 0; i < n; i++) {
         current = current->prev;
