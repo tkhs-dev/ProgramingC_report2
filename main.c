@@ -48,6 +48,7 @@ void add_history(char *);
 int parse(char [], char *[]);
 void execute_command(char *[], int);
 command *select_command(char *command);
+bool redo_match(char *command);
 
 /*
  * ヒストリー系の変数
@@ -120,7 +121,7 @@ int main(int argc, char *argv[])
 
         if(command_status == 2) {
             printf("done.\n");
-            exit(EXIT_SUCCESS);
+            break;
         } else if(command_status == 3) {
             continue;
         }
@@ -135,10 +136,12 @@ int main(int argc, char *argv[])
         /*
         *  ヒストリーに追加
         */
-        add_history(command_buffer);
+        if(redo_match(command_buffer) == false){
+            add_history(command_buffer);
+        }
     }
-
-    return 0;
+    clear_list(history_list);
+    exit(EXIT_SUCCESS);
 }
 
 void initialize_history(int history_size) {
@@ -166,9 +169,23 @@ void add_history(char *command) {
     history_list = history_list->next;
 }
 
-history* get_history(int index) {
-    LIST* current = history_list;
-    for(int i = 0; i < index % HISTORY_SIZE; i++) {
+history* get_history_absolutely(int index){
+    struct list *current = history_list;
+    while(1) {
+        if(current->content != NULL && ((history *)current->content)->index == index){
+            return current->content;
+        }
+        current = current->next;
+        if(current == history_list){
+            break;
+        }
+    }
+    return NULL;
+}
+
+history* get_previous_relatively(int n){
+    struct list *current = history_list;
+    for(int i = 0; i < n; i++) {
         current = current->prev;
     }
     return current->content;
@@ -444,7 +461,33 @@ int history_executor(char *args[]) {
 }
 
 int redo_executor(char *args[]) {
-    printf("redo called!!\n");
+    char *e;
+    int index = strtol(args[0]+1, &e, 10);
+    if(*e == '\0'){
+        if(index < -HISTORY_SIZE || index >= HISTORY_SIZE){
+            printf("Invalid history index\n");
+            return 1;
+        }
+
+        history* his;
+        if(index >= 0){
+            his = get_history_absolutely(index);
+        }else{
+            his = get_previous_relatively(-index);
+        }
+
+        if(his == NULL){
+            printf("No such history index\n");
+            return 1;
+        }
+        char* command = strdup(his->command);
+
+        char *redo_args[MAXARGNUM];
+        int status = parse(command, redo_args);
+        printf("redo : %s\n", command);
+        execute_command(redo_args, status);
+        free(command);
+    }
     return 0;
 }
 
