@@ -29,7 +29,9 @@
 
 typedef struct {
     char *name;
+
     bool (*is_match_func)(char *);
+
     int (*executor)(char *[]);
 } command;
 
@@ -49,12 +51,19 @@ typedef struct {
  */
 
 void initialize_history(int);
+
 void add_history(char *);
+
 void dispose_history();
+
 void dispose_alias();
+
 int parse(char [], char *[]);
+
 void execute_command(char *[], int);
+
 command *select_command(char *command);
+
 bool redo_match(char *command);
 
 /*
@@ -86,8 +95,7 @@ struct list *alias_list;
  *
  *--------------------------------------------------------------------------*/
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     char command_buffer[BUFLEN]; /* コマンド用のバッファ */
     char *args[MAXARGNUM];       /* 引数へのポインタの配列 */
     int command_status;          /* コマンドの状態を表す
@@ -102,23 +110,23 @@ int main(int argc, char *argv[])
      *  無限にループする
      */
 
-    for(;;) {
+    for (;;) {
 
         /*
          *  プロンプトを表示する
          */
-        char* prompt = getenv("PSC1");
+        char *prompt = getenv("PSC1");
         if (prompt == NULL) {
             prompt = "Command : ";
         }
-        printf("%s",prompt);
+        printf("%s", prompt);
 
         /*
          *  標準入力から１行を command_buffer へ読み込む
          *  入力が何もなければ改行を出力してプロンプト表示へ戻る
          */
 
-        if(fgets(command_buffer, BUFLEN, stdin) == NULL) {
+        if (fgets(command_buffer, BUFLEN, stdin) == NULL) {
             printf("\n");
             continue;
         }
@@ -136,10 +144,10 @@ int main(int argc, char *argv[])
          *  引数が何もなければプロンプト表示へ戻る
          */
 
-        if(command_status == 2) {
+        if (command_status == 2) {
             printf("done.\n");
             break;
-        } else if(command_status == 3) {
+        } else if (command_status == 3) {
             continue;
         }
 
@@ -153,7 +161,7 @@ int main(int argc, char *argv[])
         /*
         *  ヒストリーに追加
         */
-        if(redo_match(command_buffer) == false){
+        if (redo_match(command_buffer) == false) {
             add_history(command_buffer);
         }
     }
@@ -167,36 +175,36 @@ void initialize_history(int history_size) {
     history_list = NULL;
     history_list = insert(history_list, NULL);
     struct list *tail = history_list;
-    for(int i = 0; i < history_size-2; i++) {
+    for (int i = 0; i < history_size - 2; i++) {
         history_list = insert(history_list, NULL);
     }
     history_list = new_item(NULL, history_list, tail);
 }
 
 void add_history(char *command) {
-    history *new_history = (history *)malloc(sizeof(history));
+    history *new_history = (history *) malloc(sizeof(history));
     new_history->command = strdup(command);
-    if(history_list->content != NULL) {
-        free(((history *)history_list->content)->command);
+    if (history_list->content != NULL) {
+        free(((history *) history_list->content)->command);
         free(history_list->content);
     }
-    if(history_list->prev->content != NULL) {
-        new_history->index = ((history *)history_list->prev->content)->index + 1;
-    }else{
+    if (history_list->prev->content != NULL) {
+        new_history->index = ((history *) history_list->prev->content)->index + 1;
+    } else {
         new_history->index = 0;
     }
     history_list->content = new_history;
     history_list = history_list->next;
 }
 
-history* get_history_absolutely(int index){
+history *get_history_absolutely(int index) {
     struct list *current = history_list;
-    while(1) {
-        if(current->content != NULL && ((history *)current->content)->index == index){
+    while (1) {
+        if (current->content != NULL && ((history *) current->content)->index == index) {
             return current->content;
         }
         current = current->next;
-        if(current == history_list){
+        if (current == history_list) {
             break;
         }
     }
@@ -205,12 +213,12 @@ history* get_history_absolutely(int index){
 
 void dispose_history() {
     struct list *current = history_list;
-    while(1) {
-        if(current == history_list){
+    while (1) {
+        if (current == history_list) {
             break;
         }
-        if(current->content != NULL){
-            free(((history *)current->content)->command);
+        if (current->content != NULL) {
+            free(((history *) current->content)->command);
         }
         current = current->next;
     }
@@ -218,29 +226,30 @@ void dispose_history() {
     clear_list(history_list);
 }
 
-history* get_history_relatively(int n){
+history *get_history_relatively(int n) {
     struct list *current = history_list;
-    for(int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         current = current->prev;
     }
     return current->content;
 }
 
-char* get_alias(char *name) {
+char *get_alias(char *name) {
     struct list *current = alias_list;
-    while(1) {
-        if(current == NULL){
+    while (1) {
+        if (current == NULL) {
             break;
         }
         current = current->next;
     }
     current = alias_list;
-    while(1) {
-        if(current == NULL){
+    while (1) {
+        if (current == NULL) {
             break;
         }
-        if(current->content != NULL && ((alias *)current->content)->name != NULL && strcmp(((alias *)current->content)->name, name) == 0){
-            return ((alias *)current->content)->value;
+        if (current->content != NULL && ((alias *) current->content)->name != NULL &&
+            strcmp(((alias *) current->content)->name, name) == 0) {
+            return ((alias *) current->content)->value;
         }
         current = current->next;
     }
@@ -249,13 +258,13 @@ char* get_alias(char *name) {
 
 void dispose_alias() {
     struct list *current = alias_list;
-    while(1) {
-        if(current == NULL){
+    while (1) {
+        if (current == NULL) {
             break;
         }
-        if(current->content != NULL){
-            free(((alias *)current->content)->name);
-            free(((alias *)current->content)->value);
+        if (current->content != NULL) {
+            free(((alias *) current->content)->name);
+            free(((alias *) current->content)->value);
         }
         current = current->next;
     }
@@ -305,7 +314,7 @@ int parse(char buffer[],        /* バッファ */
      *  コマンドの状態を表す返り値を 2 に設定してリターンする
      */
 
-    if(strcmp(buffer, "exit") == 0) {
+    if (strcmp(buffer, "exit") == 0) {
 
         status = 2;
         return status;
@@ -316,14 +325,14 @@ int parse(char buffer[],        /* バッファ */
      *  （ヌル文字が出てくるまで繰り返す）
      */
 
-    while(*buffer != '\0') {
+    while (*buffer != '\0') {
 
         /*
          *  空白類（空白とタブ）をヌル文字に置き換える
          *  これによってバッファ内の各引数が分割される
          */
 
-        while(*buffer == ' ' || *buffer == '\t') {
+        while (*buffer == ' ' || *buffer == '\t') {
             *(buffer++) = '\0';
         }
 
@@ -331,7 +340,7 @@ int parse(char buffer[],        /* バッファ */
          * 空白の後が終端文字であればループを抜ける
          */
 
-        if(*buffer == '\0') {
+        if (*buffer == '\0') {
             break;
         }
 
@@ -359,7 +368,7 @@ int parse(char buffer[],        /* バッファ */
          *  （ヌル文字でも空白類でもない場合に読み進める）
          */
 
-        while((*buffer != '\0') && (in_quotes || (*buffer != ' ' && *buffer != '\t'))) {
+        while ((*buffer != '\0') && (in_quotes || (*buffer != ' ' && *buffer != '\t'))) {
             if (*buffer == '\"') {
                 in_quotes = !in_quotes;
                 *(buffer++) = '\0';
@@ -384,7 +393,7 @@ int parse(char buffer[],        /* バッファ */
      *  そうでなければ status に 0 を設定する
      */
 
-    if(arg_index > 0 && strcmp(args[arg_index - 1], "&") == 0) {
+    if (arg_index > 0 && strcmp(args[arg_index - 1], "&") == 0) {
 
         --arg_index;
         args[arg_index] = '\0';
@@ -400,7 +409,7 @@ int parse(char buffer[],        /* バッファ */
      *  引数が何もなかった場合
      */
 
-    if(arg_index == 0) {
+    if (arg_index == 0) {
         status = 3;
     }
 
@@ -436,7 +445,7 @@ void execute_command(char *args[],    /* 引数の配列 */
     if (command != NULL) {
         command->executor(args);
         return;
-    }else{
+    } else {
         int pid;      /* プロセスＩＤ */
         int status;   /* 子プロセスの終了ステータス */
 
@@ -446,7 +455,7 @@ void execute_command(char *args[],    /* 引数の配列 */
          *  生成できたかを確認し、失敗ならばプログラムを終了する
          */
         pid = fork();
-        if(pid < 0) {
+        if (pid < 0) {
             perror("fork");
             exit(EXIT_FAILURE);
         }
@@ -458,18 +467,18 @@ void execute_command(char *args[],    /* 引数の配列 */
          *  ・第１引数には実行されるプログラムを示す文字列が格納されている
          *  ・引数の配列はヌルポインタで終了している
          */
-        if(pid == 0) {
+        if (pid == 0) {
             status = execvp(args[0], args);
-            if(status < 0) {
+            if (status < 0) {
                 perror("execvp");
                 exit(EXIT_FAILURE);
             }
-        }else{
+        } else {
             /*
             *  コマンドの状態がバックグラウンドなら関数を抜ける
             */
 
-            if(command_status == 1) {
+            if (command_status == 1) {
                 return;
             }
 
@@ -490,11 +499,11 @@ void execute_command(char *args[],    /* 引数の配列 */
  * コマンドの実装
  */
 int cd_executor(char *args[]) {
-    if(args[1] == NULL){
+    if (args[1] == NULL) {
         chdir(getenv("HOME"));
         return 0;
-    }else{
-        if(chdir(args[1]) < 0){
+    } else {
+        if (chdir(args[1]) < 0) {
             perror("cd");
             return 1;
         }
@@ -509,22 +518,22 @@ int pushd_executor(char *args[]) {
 
 int dirs_executor(char *args[]) {
     struct list *current = dir_stack;
-    while(1) {
-        if(current == NULL){
+    while (1) {
+        if (current == NULL) {
             break;
         }
-        printf("%s\n", (char *)current->content);
+        printf("%s\n", (char *) current->content);
         current = current->next;
     }
     return 0;
 }
 
 int popd_executor(char *args[]) {
-    if(dir_stack == NULL){
+    if (dir_stack == NULL) {
         printf("Directory stack is empty\n");
         return 1;
     }
-    chdir((char *)dir_stack->content);
+    chdir((char *) dir_stack->content);
     dir_stack = delete(dir_stack);
 
     return 0;
@@ -533,12 +542,12 @@ int popd_executor(char *args[]) {
 int history_executor(char *args[]) {
     struct list *current = history_list;
     struct list *head = current;
-    while(1) {
-        if(current->content != NULL){
-            printf("[%d] %s", ((history *)current->content)->index, ((history *)current->content)->command);
+    while (1) {
+        if (current->content != NULL) {
+            printf("[%d] %s", ((history *) current->content)->index, ((history *) current->content)->command);
         }
         current = current->next;
-        if(current == head) {
+        if (current == head) {
             break;
         }
     }
@@ -546,21 +555,21 @@ int history_executor(char *args[]) {
 }
 
 int redo_executor(char *args[]) {
-    history* his = NULL;
-    if(args[0][1] == '!'){
+    history *his = NULL;
+    if (args[0][1] == '!') {
         his = get_history_relatively(1);
-    }else{
+    } else {
         char *e;
-        int index = strtol(args[0]+1, &e, 10);
-        if(*e == '\0'){
-            if(index < -HISTORY_SIZE || index >= HISTORY_SIZE){
+        int index = strtol(args[0] + 1, &e, 10);
+        if (*e == '\0') {
+            if (index < -HISTORY_SIZE || index >= HISTORY_SIZE) {
                 printf("Invalid history index\n");
                 return 1;
             }
             his = index >= 0 ? get_history_absolutely(index) : get_history_relatively(-index);
-        }else{
+        } else {
             struct list *current = history_list;
-            while(1) {
+            while (1) {
                 if (current->content != NULL &&
                     strncmp(((history *) current->content)->command, args[0] + 1, strlen(args[0] + 1)) == 0) {
                     his = current->content;
@@ -574,11 +583,11 @@ int redo_executor(char *args[]) {
         }
     }
 
-    if(his == NULL){
+    if (his == NULL) {
         printf("No such history\n");
         return 1;
     }
-    char* command = strdup(his->command);
+    char *command = strdup(his->command);
 
     char *redo_args[MAXARGNUM];
     int status = parse(command, redo_args);
@@ -597,11 +606,11 @@ int prompt_executor(char *args[]) {
 }
 
 int alias_executor(char *args[]) {
-    if(args[1] == NULL || args[2] == NULL){
+    if (args[1] == NULL || args[2] == NULL) {
         printf("alias: Too few arguments\n");
         return 1;
     }
-    alias* new_alias = (alias *)malloc(sizeof(alias));
+    alias *new_alias = (alias *) malloc(sizeof(alias));
     new_alias->name = strdup(args[1]);
     new_alias->value = strdup(args[2]);
     alias_list = insert(alias_list, new_alias);
@@ -610,13 +619,13 @@ int alias_executor(char *args[]) {
 
 int unalias_executor(char *args[]) {
     struct list *current = alias_list;
-    while(1) {
-        if(current == NULL){
+    while (1) {
+        if (current == NULL) {
             break;
         }
-        if(current->content != NULL && strcmp(((alias *)current->content)->name, args[1]) == 0){
-            free(((alias *)current->content)->name);
-            free(((alias *)current->content)->value);
+        if (current->content != NULL && strcmp(((alias *) current->content)->name, args[1]) == 0) {
+            free(((alias *) current->content)->name);
+            free(((alias *) current->content)->value);
             alias_list = delete(current);
             break;
         }
@@ -631,30 +640,30 @@ int unalias_executor(char *args[]) {
  */
 
 command commands[] = {
-        {"cd",NULL,        cd_executor},
-        {"pushd",NULL,     pushd_executor},
-        {"dirs",NULL,      dirs_executor},
-        {"popd",NULL,      popd_executor},
-        {"history",NULL,   history_executor},
+        {"cd",      NULL,  cd_executor},
+        {"pushd",   NULL,  pushd_executor},
+        {"dirs",    NULL,  dirs_executor},
+        {"popd",    NULL,  popd_executor},
+        {"history", NULL,  history_executor},
         {"!!", redo_match, redo_executor},
-        {"prompt",NULL,    prompt_executor},
-        {"alias",NULL,     alias_executor},
-        {"unalias",NULL,   unalias_executor},
+        {"prompt",  NULL,  prompt_executor},
+        {"alias",   NULL,  alias_executor},
+        {"unalias", NULL,  unalias_executor},
 };
 
-command* select_command(char *command) {
+command *select_command(char *command) {
     char *alias_command = get_alias(command);
-    if(alias_command != NULL){
+    if (alias_command != NULL) {
         strcpy(command, alias_command);
     }
     for (int i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
-        if(commands[i].is_match_func == NULL){
+        if (commands[i].is_match_func == NULL) {
             if (strcmp(commands[i].name, command) == 0) {
                 return &commands[i];
-            }else{
+            } else {
                 continue;
             }
-        }else if (commands[i].is_match_func(command)) {
+        } else if (commands[i].is_match_func(command)) {
             return &commands[i];
         }
     }
