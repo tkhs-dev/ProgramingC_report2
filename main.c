@@ -55,6 +55,11 @@ bool redo_match(char *command);
  */
 struct list *history_list;
 
+/*
+ * ディレクトリスタック系の変数
+ */
+struct list *dir_stack;
+
 /*----------------------------------------------------------------------------
  *
  *  関数名   : main
@@ -141,6 +146,7 @@ int main(int argc, char *argv[])
         }
     }
     clear_list(history_list);
+    clear_list(dir_stack);
     exit(EXIT_SUCCESS);
 }
 
@@ -158,6 +164,7 @@ void add_history(char *command) {
     history *new_history = (history *)malloc(sizeof(history));
     new_history->command = strdup(command);
     if(history_list->content != NULL) {
+        free(((history *)history_list->content)->command);
         free(history_list->content);
     }
     if(history_list->prev->content != NULL) {
@@ -431,17 +438,30 @@ int cd_executor(char *args[]) {
 }
 
 int pushd_executor(char *args[]) {
-    printf("pushd called!!\n");
+    dir_stack = insert(dir_stack, getcwd(NULL, 0));
     return 0;
 }
 
 int dirs_executor(char *args[]) {
-    printf("dirs called!!\n");
+    struct list *current = dir_stack;
+    while(1) {
+        if(current == NULL){
+            break;
+        }
+        printf("%s\n", (char *)current->content);
+        current = current->next;
+    }
     return 0;
 }
 
 int popd_executor(char *args[]) {
-    printf("popd called!!\n");
+    if(dir_stack == NULL){
+        printf("Directory stack is empty\n");
+        return 1;
+    }
+    chdir((char *)dir_stack->content);
+    dir_stack = delete(dir_stack);
+
     return 0;
 }
 
