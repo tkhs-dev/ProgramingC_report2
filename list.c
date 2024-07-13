@@ -15,7 +15,7 @@ LIST *new_item(void* content, LIST *post_item, LIST *pre_item)
     }
 
     if (content) {
-        new->content = strdup(content);
+        new->content = content;
         if (!new->content) {
             perror("new_item");
             exit(1);
