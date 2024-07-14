@@ -420,6 +420,17 @@ int parse(char buffer[],        /* バッファ */
     return status;
 }
 
+bool starts_with(const char *str, const char *prefix) {
+    return strncmp(str, prefix, strlen(prefix)) == 0;
+}
+
+bool ends_with(const char *str, const char *suffix) {
+    if (strlen(str) < strlen(suffix)) {
+        return false;
+    }
+    return strcmp(str + strlen(str) - strlen(suffix), suffix) == 0;
+}
+
 /*----------------------------------------------------------------------------
  *
  *  関数名   : execute_command
@@ -571,7 +582,7 @@ int redo_executor(char *args[]) {
             struct list *current = history_list;
             while (1) {
                 if (current->content != NULL &&
-                    strncmp(((history *) current->content)->command, args[0] + 1, strlen(args[0] + 1)) == 0) {
+                    starts_with(((history *) current->content)->command, args[0] + 1)) {
                     his = current->content;
                     break;
                 }
