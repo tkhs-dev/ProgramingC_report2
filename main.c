@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <stdbool.h>
+#include <dirent.h>
 #include "list.h"
 
 /*
@@ -59,6 +60,8 @@ void dispose_history();
 void dispose_alias();
 
 int parse(char [], char *[]);
+
+void expand_wildcard(char *[]);
 
 void execute_command(char *[], int);
 
@@ -150,11 +153,11 @@ int main(int argc, char *argv[]) {
         } else if (command_status == 3) {
             continue;
         }
+        expand_wildcard(args);
 
         /*
          *  コマンドを実行する
          */
-
         execute_command(args, command_status);
         printf("\n");
 
@@ -429,6 +432,73 @@ bool ends_with(const char *str, const char *suffix) {
         return false;
     }
     return strcmp(str + strlen(str) - strlen(suffix), suffix) == 0;
+}
+
+void get_files(char *pattern, char *files[]) {
+    // ワイルドカードにマッチするファイルを取得する
+    DIR *dir;
+    struct dirent *dp;
+    if ((dir = opendir(".")) == NULL) {
+        perror("opendir");
+        exit(EXIT_FAILURE);
+    }
+    int i = 0;
+
+    bool (*is_match)(const char *, const char *);
+    if (ends_with(pattern, "*")) {
+        pattern[strlen(pattern) - 1] = '\0';
+        is_match = starts_with;
+    } else if (starts_with(pattern, "*")) {
+        pattern++;
+        is_match = ends_with;
+    }
+
+    while ((dp = readdir(dir)) != NULL) {
+        if (strcmp(dp->d_name,".")!=0 && strcmp(dp->d_name,"..") != 0 ) {
+            if (is_match == NULL || is_match(dp->d_name, pattern)) {
+                files[i] = strdup(dp->d_name);
+                i++;
+            }
+        }
+    }
+    files[i] = NULL;
+    closedir(dir);
+}
+
+void expand_wildcard(char *args[]) {
+    // ワイルドカードを展開する
+    char *tmp[MAXARGNUM];
+    int i = 0;
+    int j = 0;
+
+    while (args[i] != NULL) {
+        if (args[i][0] == '*') {
+            char *files[MAXARGNUM];
+            get_files(args[i], files);
+            for (int k = 0; files[k] != NULL; k++) {
+                tmp[j] = files[k];
+                j++;
+            }
+        } else if(args[i][strlen(args[i]) - 1] == '*') {
+            char *files[MAXARGNUM];
+            get_files(args[i], files);
+            for (int k = 0; files[k] != NULL; k++) {
+                tmp[j] = files[k];
+                j++;
+            }
+        } else {
+                tmp[j] = args[i];
+                j++;
+        }
+        i++;
+        tmp[j] = NULL;
+    }
+    i = 0;
+    while (tmp[i] != NULL) {
+        args[i] = tmp[i];
+        i++;
+    }
+    args[i] = NULL;
 }
 
 /*----------------------------------------------------------------------------
