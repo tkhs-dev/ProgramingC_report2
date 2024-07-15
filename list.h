@@ -1,3 +1,6 @@
+#define foreach(item, list) \
+    for(LIST *item = list; item != NULL; item = item->next)
+
 typedef struct list{
     void*  content;
     struct list *prev;

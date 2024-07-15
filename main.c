@@ -24,6 +24,10 @@
 #define MAXARGNUM  256     /* 最大の引数の数 */
 #define HISTORY_SIZE 32
 
+#define foreach_history(item, list) \
+    int enumeration = 0;\
+    for(LIST *item = list; enumeration++ == 0 || item != list; item = item->next)
+
 /*
  * 構造体の定義
  */
@@ -201,29 +205,19 @@ void add_history(char *command) {
 }
 
 history *get_history_absolutely(int index) {
-    struct list *current = history_list;
-    while (1) {
+    foreach_history(current, history_list){
         if (current->content != NULL && ((history *) current->content)->index == index) {
             return current->content;
-        }
-        current = current->next;
-        if (current == history_list) {
-            break;
         }
     }
     return NULL;
 }
 
 void dispose_history() {
-    struct list *current = history_list;
-    while (1) {
-        if (current == history_list) {
-            break;
-        }
+    foreach_history(current, history_list){
         if (current->content != NULL) {
             free(((history *) current->content)->command);
         }
-        current = current->next;
     }
     history_list->prev->next = NULL;
     clear_list(history_list);
@@ -239,30 +233,21 @@ history *get_history_relatively(int n) {
 
 char *get_alias(char *name) {
     struct list *current = alias_list;
-    while (1) {
-        if (current == NULL) {
-            break;
-        }
+    foreach(current, alias_list){
         if (current->content != NULL && ((alias *) current->content)->name != NULL &&
             strcmp(((alias *) current->content)->name, name) == 0) {
             return ((alias *) current->content)->value;
         }
-        current = current->next;
     }
     return NULL;
 }
 
 void dispose_alias() {
-    struct list *current = alias_list;
-    while (1) {
-        if (current == NULL) {
-            break;
-        }
+    foreach(current, alias_list){
         if (current->content != NULL) {
             free(((alias *) current->content)->name);
             free(((alias *) current->content)->value);
         }
-        current = current->next;
     }
     clear_list(alias_list);
 }
@@ -591,13 +576,8 @@ int pushd_executor(char *args[]) {
 }
 
 int dirs_executor(char *args[]) {
-    struct list *current = dir_stack;
-    while (1) {
-        if (current == NULL) {
-            break;
-        }
+    foreach(current, dir_stack){
         printf("%s\n", (char *) current->content);
-        current = current->next;
     }
     return 0;
 }
@@ -614,15 +594,10 @@ int popd_executor(char *args[]) {
 }
 
 int history_executor(char *args[]) {
-    struct list *current = history_list;
-    struct list *head = current;
-    while (1) {
+    foreach_history(current, history_list){
+        printf("%d\n",enumeration);
         if (current->content != NULL) {
             printf("[%d] %s", ((history *) current->content)->index, ((history *) current->content)->command);
-        }
-        current = current->next;
-        if (current == head) {
-            break;
         }
     }
     return 0;
@@ -642,15 +617,10 @@ int redo_executor(char *args[]) {
             }
             his = index >= 0 ? get_history_absolutely(index) : get_history_relatively(-index);
         } else {
-            struct list *current = history_list;
-            while (1) {
+            foreach_history(current, history_list){
                 if (current->content != NULL &&
                     starts_with(((history *) current->content)->command, args[0] + 1)) {
                     his = current->content;
-                    break;
-                }
-                current = current->next;
-                if (current == history_list) {
                     break;
                 }
             }
@@ -692,18 +662,13 @@ int alias_executor(char *args[]) {
 }
 
 int unalias_executor(char *args[]) {
-    struct list *current = alias_list;
-    while (1) {
-        if (current == NULL) {
-            break;
-        }
+    foreach(current, alias_list){
         if (current->content != NULL && strcmp(((alias *) current->content)->name, args[1]) == 0) {
             free(((alias *) current->content)->name);
             free(((alias *) current->content)->value);
             alias_list = delete(current);
             break;
         }
-        current = current->next;
     }
     return 0;
 }
