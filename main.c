@@ -180,10 +180,10 @@ int main(int argc, char *argv[]) {
 
 void initialize_history(int history_size) {
     history_list = NULL;
-    history_list = insert(history_list, NULL);
+    history_list = add(history_list, NULL);
     struct list *tail = history_list;
     for (int i = 0; i < history_size - 2; i++) {
-        history_list = insert(history_list, NULL);
+        history_list = add(history_list, NULL);
     }
     history_list = new_item(NULL, history_list, tail);
 }
@@ -570,7 +570,7 @@ int cd_executor(char *args[]) {
 }
 
 int pushd_executor(char *args[]) {
-    dir_stack = insert(dir_stack, getcwd(NULL, 0));
+    dir_stack = add(dir_stack, getcwd(NULL, 0));
     return 0;
 }
 
@@ -656,7 +656,7 @@ int alias_executor(char *args[]) {
     alias *new_alias = (alias *) malloc(sizeof(alias));
     new_alias->name = strdup(args[1]);
     new_alias->value = strdup(args[2]);
-    alias_list = insert(alias_list, new_alias);
+    alias_list = add(alias_list, new_alias);
     return 0;
 }
 

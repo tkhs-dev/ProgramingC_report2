@@ -8,6 +8,6 @@ typedef struct list{
 } LIST;
 
 LIST *new_item(void* content, LIST *post_item, LIST *pre_item);
-LIST *insert(LIST *root, void* content);
+LIST *add(LIST *root, void* content);
 LIST *delete(LIST *item);
 void clear_list(LIST *item);

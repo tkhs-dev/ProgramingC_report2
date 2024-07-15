@@ -33,7 +33,7 @@ LIST *new_item(void* content, LIST *post_item, LIST *pre_item)
     return new;
 }
 
-LIST *insert(LIST *root, void* content){
+LIST *add(LIST *root, void* content){
     if(root == NULL)
         return(new_item(content, NULL, NULL));
 
