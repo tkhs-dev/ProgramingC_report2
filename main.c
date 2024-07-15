@@ -243,13 +243,6 @@ char *get_alias(char *name) {
         if (current == NULL) {
             break;
         }
-        current = current->next;
-    }
-    current = alias_list;
-    while (1) {
-        if (current == NULL) {
-            break;
-        }
         if (current->content != NULL && ((alias *) current->content)->name != NULL &&
             strcmp(((alias *) current->content)->name, name) == 0) {
             return ((alias *) current->content)->value;
