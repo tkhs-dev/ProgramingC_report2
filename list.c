@@ -34,10 +34,6 @@ LIST *new_item(void* content, LIST *post_item, LIST *pre_item)
 }
 
 LIST *insert(LIST *root, void* content){
-
-    LIST *p;
-
-    /* root が NULL の場合の新規リスト要素の挿入処理 */
     if(root == NULL)
         return(new_item(content, NULL, NULL));
 
