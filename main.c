@@ -232,7 +232,6 @@ history *get_history_relatively(int n) {
 }
 
 char *get_alias(char *name) {
-    struct list *current = alias_list;
     foreach(current, alias_list){
         if (current->content != NULL && ((alias *) current->content)->name != NULL &&
             strcmp(((alias *) current->content)->name, name) == 0) {
