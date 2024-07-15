@@ -454,7 +454,7 @@ void get_files(char *pattern, char *files[]) {
     }
 
     while ((dp = readdir(dir)) != NULL) {
-        if (strcmp(dp->d_name,".")!=0 && strcmp(dp->d_name,"..") != 0 ) {
+        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) {
             if (is_match == NULL || is_match(dp->d_name, pattern)) {
                 files[i] = strdup(dp->d_name);
                 i++;
@@ -479,7 +479,7 @@ void expand_wildcard(char *args[]) {
                 tmp[j] = files[k];
                 j++;
             }
-        } else if(args[i][strlen(args[i]) - 1] == '*') {
+        } else if (args[i][strlen(args[i]) - 1] == '*') {
             char *files[MAXARGNUM];
             get_files(args[i], files);
             for (int k = 0; files[k] != NULL; k++) {
@@ -487,8 +487,8 @@ void expand_wildcard(char *args[]) {
                 j++;
             }
         } else {
-                tmp[j] = args[i];
-                j++;
+            tmp[j] = args[i];
+            j++;
         }
         i++;
         tmp[j] = NULL;
