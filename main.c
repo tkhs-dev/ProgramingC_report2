@@ -65,6 +65,8 @@ void dispose_alias();
 
 int parse(char [], char *[]);
 
+void replace_env(char *[]);
+
 void expand_wildcard(char *[]);
 
 void execute_command(char *[], int);
@@ -157,6 +159,7 @@ int main(int argc, char *argv[]) {
         } else if (command_status == 3) {
             continue;
         }
+        replace_env(args);
         expand_wildcard(args);
 
         /*
@@ -409,6 +412,17 @@ bool ends_with(const char *str, const char *suffix) {
         return false;
     }
     return strcmp(str + strlen(str) - strlen(suffix), suffix) == 0;
+}
+
+void replace_env(char *args[]) {
+    for (int i = 0; args[i] != NULL; i++) {
+        if (args[i][0] == '$') {
+            char *env = getenv(args[i] + 1);
+            if (env != NULL) {
+                args[i] = env;
+            }
+        }
+    }
 }
 
 void get_files(char *pattern, char *files[]) {
@@ -672,6 +686,19 @@ int unalias_executor(char *args[]) {
     return 0;
 }
 
+int export_executor(char *args[]) {
+    extern char **environ;
+    if (args[1] == NULL) {
+        for (int i = 0; environ[i] != NULL; i++) {
+            printf("%s\n", environ[i]);
+        }
+    } else if (args[2] == NULL) {
+        unsetenv(args[1]);
+    } else {
+        setenv(args[1], args[2], 1);
+    }
+    return 0;
+}
 
 /*
  * コマンドの設定
@@ -687,6 +714,7 @@ command commands[] = {
         {"prompt",  NULL,  prompt_executor},
         {"alias",   NULL,  alias_executor},
         {"unalias", NULL,  unalias_executor},
+        {"export",  NULL,  export_executor},
 };
 
 command *select_command(char *command) {
