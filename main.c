@@ -608,7 +608,6 @@ int popd_executor(char *args[]) {
 
 int history_executor(char *args[]) {
     foreach_history(current, history_list){
-        printf("%d\n",enumeration);
         if (current->content != NULL) {
             printf("[%d] %s", ((history *) current->content)->index, ((history *) current->content)->command);
         }
