@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
         if (prompt == NULL) {
             prompt = "Command : ";
         }
-        printf("%s", prompt);
+        if(isatty(fileno(stdin))) printf("%s", prompt);
 
         /*
          *  標準入力から１行を command_buffer へ読み込む
@@ -137,6 +137,7 @@ int main(int argc, char *argv[]) {
 
         if (fgets(command_buffer, BUFLEN, stdin) == NULL) {
             printf("\n");
+            if(!isatty(fileno(stdin))) break;
             continue;
         }
 
