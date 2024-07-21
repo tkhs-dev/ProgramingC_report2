@@ -61,6 +61,8 @@ void add_history(char *);
 
 void dispose_history();
 
+char *get_alias(char *);
+
 void dispose_alias();
 
 int parse(char [], char *[]);
@@ -159,6 +161,10 @@ int main(int argc, char *argv[]) {
             break;
         } else if (command_status == 3) {
             continue;
+        }
+        char *alias_command = get_alias(args[0]);
+        if (alias_command != NULL) {
+            strcpy(args[0], alias_command);
         }
         replace_env(args);
         expand_wildcard(args);
@@ -718,10 +724,6 @@ command commands[] = {
 };
 
 command *select_command(char *command) {
-    char *alias_command = get_alias(command);
-    if (alias_command != NULL) {
-        strcpy(command, alias_command);
-    }
     for (int i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
         if (commands[i].is_match_func == NULL) {
             if (strcmp(commands[i].name, command) == 0) {
