@@ -411,6 +411,9 @@ int parse(char buffer[],        /* バッファ */
 }
 
 bool starts_with(const char *str, const char *prefix) {
+    if (strlen(str) < strlen(prefix)) {
+        return false;
+    }
     return strncmp(str, prefix, strlen(prefix)) == 0;
 }
 

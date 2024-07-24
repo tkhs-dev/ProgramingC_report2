@@ -15,14 +15,10 @@ LIST *new_item(void* content, LIST *post_item, LIST *pre_item)
     }
 
     if (content) {
-        new->content = content;
-        if (!new->content) {
-            perror("new_item");
-            exit(1);
-        }
-    } else {
-        new->content = content;
+        perror("new_item");
+        exit(1);
     }
+    new->content = content;
     new->next = post_item;
     if (post_item)
         post_item->prev = new;
@@ -41,18 +37,15 @@ LIST *add(LIST *root, void* content){
 }
 
 LIST *delete(LIST *item){
-    LIST *next_item = item->next;
-    LIST *prev_item = item->prev;
-
-    if(prev_item)
-        prev_item->next = next_item;
-    if(next_item)
-        next_item->prev = prev_item;
+    if(item->prev)
+        item->prev->next = item->next;
+    if(item->next)
+        item->next->prev = item->prev;
 
     free(item->content);
     free(item);
 
-    return next_item;
+    return item->next;
 }
 
 void clear_list(LIST *item){
