@@ -477,7 +477,7 @@ void expand_wildcard(char *args[]) {
     int j = 0;
 
     while (args[i] != NULL) {
-        if (args[i][0] == '*' || args[i][strlen(args[i]) - 1] == '*') {
+        if (starts_with(args[i],"*") || ends_with(args[i], "*")) {
             char *files[MAXARGNUM];
             get_files(args[i], files);
             for (int k = 0; files[k] != NULL; k++) {
