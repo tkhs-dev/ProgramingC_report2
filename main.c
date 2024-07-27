@@ -24,9 +24,13 @@
 #define MAXARGNUM  256     /* 最大の引数の数 */
 #define HISTORY_SIZE 32
 
-#define foreach_history(item, list) \
+#define foreach_history_inv(item, list) \
     int enumeration = 0;\
     for(LIST *item = list; enumeration++ == 0 || item != list; item = item->next)
+
+#define foreach_history(item, list) \
+    int enumeration = 0;\
+    for(LIST *item = list; enumeration++ == 0 || item != list; item = item->prev)
 
 /*
  * 構造体の定義
@@ -473,14 +477,7 @@ void expand_wildcard(char *args[]) {
     int j = 0;
 
     while (args[i] != NULL) {
-        if (args[i][0] == '*') {
-            char *files[MAXARGNUM];
-            get_files(args[i], files);
-            for (int k = 0; files[k] != NULL; k++) {
-                tmp[j] = files[k];
-                j++;
-            }
-        } else if (args[i][strlen(args[i]) - 1] == '*') {
+        if (args[i][0] == '*' || args[i][strlen(args[i]) - 1] == '*') {
             char *files[MAXARGNUM];
             get_files(args[i], files);
             for (int k = 0; files[k] != NULL; k++) {
@@ -617,7 +614,7 @@ int popd_executor(char *args[]) {
 }
 
 int history_executor(char *args[]) {
-    foreach_history(current, history_list){
+    foreach_history_inv(current, history_list){
         if (current->content != NULL) {
             printf("[%d] %s", ((history *) current->content)->index, ((history *) current->content)->command);
         }
