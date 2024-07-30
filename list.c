@@ -14,10 +14,6 @@ LIST *new_item(void* content, LIST *post_item, LIST *pre_item)
         exit(1);
     }
 
-    if (content) {
-        perror("new_item");
-        exit(1);
-    }
     new->content = content;
     new->next = post_item;
     if (post_item)
