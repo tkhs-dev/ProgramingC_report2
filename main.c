@@ -631,7 +631,7 @@ int redo_executor(char *args[]) {
         char *e;
         int index = strtol(args[0] + 1, &e, 10);
         if (*e == '\0') {
-            if (index < -HISTORY_SIZE || index >= HISTORY_SIZE) {
+            if (index < -HISTORY_SIZE) {
                 printf("Invalid history index\n");
                 return 1;
             }
