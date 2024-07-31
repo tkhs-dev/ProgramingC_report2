@@ -185,6 +185,7 @@ int main(int argc, char *argv[]) {
         if (redo_match(command_buffer) == false) {
             add_history(command_buffer);
         }
+        free(command);
     }
     dispose_history();
     clear_list(dir_stack);
