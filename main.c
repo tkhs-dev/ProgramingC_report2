@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
         }
         char *alias_command = get_alias(args[0]);
         if (alias_command != NULL) {
-            strcpy(args[0], alias_command);
+            args[0] = alias_command;
         }
         replace_env(args);
         expand_wildcard(args);
@@ -655,6 +655,12 @@ int redo_executor(char *args[]) {
 
     char *redo_args[MAXARGNUM];
     int status = parse(command, redo_args);
+    char *alias_command = get_alias(args[0]);
+    if (alias_command != NULL) {
+        redo_args[0] = alias_command;
+    }
+    replace_env(args);
+    expand_wildcard(args);
     execute_command(redo_args, status);
     free(command);
     return 0;
