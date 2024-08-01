@@ -665,6 +665,10 @@ bool redo_match(char *command) {
 }
 
 int prompt_executor(char *args[]) {
+    if (args[1] == NULL) {
+        printf("Too few arguments\n");
+        return 1;
+    }
     setenv("PSC1", args[1], 1);
     return 0;
 }
